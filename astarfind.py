@@ -1,35 +1,9 @@
-import pygame
-from grid import path_grid
 from queue import LifoQueue
 from collections import deque
 from sys import float_info
-import astarfind
-import time
 
-pygame.init()
-
-screen = pygame.display.set_mode((527, 527))
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-PINK = (255, 182, 193)
-BROWN = (218, 165, 32)
-
-screen.fill(BLACK)
-
-width = 15
-height = 15
-margin = 1
-
-running = True
-all_rects = []
-counter = 0
-start = ()
-end = ()
 def isValid(row, col):
-    return 0 <= row <= 30 and 0 <= col <= 30
+    return 0 <= row < 30 and 0 <= col < 30
 
 
 def isUnblocked(row, col, all_rects):
@@ -77,7 +51,6 @@ def aStarSearch(start, end, all_rects):
     foundDest = False
 
     while len(openList) != 0:
-        pygame.time.delay(5)
         p = openList.popleft()
         i, j = p[1]
         all_rects[j][i][0].visited = True
@@ -257,64 +230,6 @@ def aStarSearch(start, end, all_rects):
                     all_rects[j + 1][i + 1][0].parentCol = i
                     all_rects[j + 1][i + 1][0].parentRow = j
                     all_rects[j + 1][i + 1][1] = (0, 255, 0)
-        for rowi in all_rects:
-            for itemi in rowi:
-                recti, colori = itemi
-                pygame.draw.rect(screen, colori, recti.getRect())
-        pygame.display.flip()
+
     if not foundDest:
         return 1
-
-pointY = 0
-for y in range(15, 497, width + margin):
-    row = []
-    pointX = 0
-    for x in range(15, 497, height + margin):
-        rect = path_grid(pygame.Rect(x, y, width, height), "basic", (pointX, pointY))
-        row.append([rect, WHITE])
-        pointX += 1
-    all_rects.append(row)
-    pointY += 1
-
-
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                counter = -1
-                aStarSearch(start, end, all_rects)
-
-    if pygame.mouse.get_pressed()[0]:
-        for row in all_rects:
-            for item in row:
-                rect, color = item
-                if rect.getRect().collidepoint(pygame.mouse.get_pos()):
-                    if counter == 0 and not item[0].visited:
-                        item[1] = BROWN
-                        item[0].visited = True
-                        item[0].kind = "start"
-                        start = item[0].position
-                        counter += 1
-                    elif counter == 1 and not item[0].visited:
-                        item[1] = BROWN
-                        item[0].visited = True
-                        item[0].kind = "end"
-                        end = item[0].position
-                        counter += 1
-                    elif counter > 1 and not item[0].visited:
-                        item[1] = BLACK
-                        item[0].kind = "obstacle"
-
-        screen.fill(BLACK)
-
-    for row in all_rects:
-        for item in row:
-            rect, color = item
-            pygame.draw.rect(screen, color, rect.getRect())
-    pygame.display.flip()
-
-
-
